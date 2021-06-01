@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CinemaRoom {
 
@@ -17,7 +18,6 @@ public class CinemaRoom {
         this.rows = rows;
         this.columns = columns;
         this.availableSeats = setAvailableSeats();
-
     }
 
     public CinemaRoom() {
@@ -27,7 +27,7 @@ public class CinemaRoom {
         availableSeats = new ArrayList<>();
         for (long j = 1L; j <= rows; j++) {
             for (long k = 1L; k <= columns; k++) {
-                availableSeats.add(new Seat(j, k));
+                availableSeats.add(new Seat(j, k, false));
             }
         }
         return availableSeats;
@@ -35,7 +35,10 @@ public class CinemaRoom {
 
     @JsonGetter(value = "available_seats")
     public List<Seat> getAvailableSeats() {
-        return availableSeats;
+        return availableSeats
+                .stream()
+                .filter(x -> !x.getBooked())
+                .collect(Collectors.toList());
     }
 
     @JsonGetter(value = "total_rows")
