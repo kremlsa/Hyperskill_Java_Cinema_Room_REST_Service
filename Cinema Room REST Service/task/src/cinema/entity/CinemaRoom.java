@@ -3,6 +3,7 @@ package cinema.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,30 +13,35 @@ public class CinemaRoom {
 
     private Long rows;
     private Long columns;
-    private List<Seat> availableSeats;
+    private List<Seat> allSeats;
 
     public CinemaRoom(Long rows, Long columns) {
         this.rows = rows;
         this.columns = columns;
-        this.availableSeats = setAvailableSeats();
+        this.allSeats = setAllSeats();
     }
 
     public CinemaRoom() {
     }
 
-    public List<Seat> setAvailableSeats() {
-        availableSeats = new ArrayList<>();
+    public List<Seat> setAllSeats() {
+        allSeats = new ArrayList<>();
         for (long j = 1L; j <= rows; j++) {
             for (long k = 1L; k <= columns; k++) {
-                availableSeats.add(new Seat(j, k, false));
+                allSeats.add(new Seat(j, k, false));
             }
         }
-        return availableSeats;
+        return allSeats;
+    }
+
+    @JsonIgnore
+    public List<Seat> getAllSeats() {
+        return allSeats;
     }
 
     @JsonGetter(value = "available_seats")
     public List<Seat> getAvailableSeats() {
-        return availableSeats
+        return allSeats
                 .stream()
                 .filter(x -> !x.getBooked())
                 .collect(Collectors.toList());

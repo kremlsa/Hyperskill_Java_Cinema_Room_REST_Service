@@ -10,6 +10,8 @@ public class Seat {
     private Long price;
     @JsonIgnore
     private Boolean isBooked;
+    @JsonIgnore
+    private String token;
 
     public Seat() {
     }
@@ -19,6 +21,7 @@ public class Seat {
         this.column = column;
         this.price = (row <= 4L ? 10L : 8L);
         this.isBooked = isBooked;
+        this.token = "";
     }
 
     public Long getRow() {
@@ -53,5 +56,14 @@ public class Seat {
 
     public void setPrice(Long price) {
         this.price = price;
+    }
+
+    @JsonIgnore
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

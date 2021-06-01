@@ -104,6 +104,257 @@ files:
     management.endpoints.web.exposure.include=*
     management.endpoint.shutdown.enabled=true
   learner_created: false
+- name: src/cinema/entity/CinemaRoom.java
+  visible: true
+  text: |
+    package cinema.entity;
+
+
+
+    import com.fasterxml.jackson.annotation.JsonGetter;
+    import com.fasterxml.jackson.annotation.JsonIgnore;
+
+    import java.util.ArrayList;
+    import java.util.List;
+    import java.util.stream.Collectors;
+
+    public class CinemaRoom {
+
+        private Long rows;
+        private Long columns;
+        private List<Seat> allSeats;
+
+        public CinemaRoom(Long rows, Long columns) {
+            this.rows = rows;
+            this.columns = columns;
+            this.allSeats = setAllSeats();
+        }
+
+        public CinemaRoom() {
+        }
+
+        public List<Seat> setAllSeats() {
+            allSeats = new ArrayList<>();
+            for (long j = 1L; j <= rows; j++) {
+                for (long k = 1L; k <= columns; k++) {
+                    allSeats.add(new Seat(j, k, false));
+                }
+            }
+            return allSeats;
+        }
+
+        @JsonIgnore
+        public List<Seat> getAllSeats() {
+            return allSeats;
+        }
+
+        @JsonGetter(value = "available_seats")
+        public List<Seat> getAvailableSeats() {
+            return allSeats
+                    .stream()
+                    .filter(x -> !x.getBooked())
+                    .collect(Collectors.toList());
+        }
+
+        @JsonGetter(value = "total_rows")
+        public Long getRows() {
+            return rows;
+        }
+
+        public void setRows(Long rows) {
+            this.rows = rows;
+        }
+
+        @JsonGetter(value = "total_columns")
+        public Long getColumns() {
+            return columns;
+        }
+
+        public void setColumns(Long columns) {
+            this.columns = columns;
+        }
+    }
+  learner_created: true
+- name: src/cinema/entity/ReturnRequest.java
+  visible: true
+  text: |
+    package cinema.entity;
+
+    public class ReturnRequest {
+        private String token;
+
+        public ReturnRequest() {
+        }
+
+        public ReturnRequest(String token) {
+            this.token = token;
+        }
+
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
+    }
+  learner_created: true
+- name: src/cinema/controller/CinemaController.java
+  visible: true
+  text: |
+    package cinema.controller;
+
+
+    import cinema.entity.CinemaRoom;
+    import cinema.entity.ReturnRequest;
+    import cinema.entity.Seat;
+    import org.springframework.http.HttpStatus;
+    import org.springframework.http.ResponseEntity;
+    import org.springframework.web.bind.annotation.*;
+
+    import java.util.HashMap;
+    import java.util.List;
+    import java.util.Map;
+    import java.util.UUID;
+    import java.util.stream.Collectors;
+
+    @RestController
+    @RequestMapping("/")
+    public class CinemaController {
+        private String ALREADY_PURCHASED = "{\n" +
+                "    \"error\": \"The ticket has been already purchased!\"\n" +
+                "}";
+        private String WRONG_BOUNDS = "{\n" +
+                "    \"error\": \"The number of a row or a column is out of bounds!\"\n" +
+                "}";
+        private String NO_SUCH_TOKEN = "{\n" +
+                "    \"error\": \"Wrong token!\"\n" +
+                "}";
+
+        CinemaRoom cinemaRoom = new CinemaRoom(9L,9L);
+
+        @GetMapping("/seats")
+        public CinemaRoom showCinemaRoom() {
+            return cinemaRoom;
+        }
+
+        @PostMapping("/purchase")
+        public ResponseEntity<Object> bookSeat(@RequestBody Seat seat) {
+            if (seat.getColumn() < 1 || seat.getColumn() > cinemaRoom.getColumns()
+            || seat.getRow() < 1 || seat.getRow() > cinemaRoom.getRows()) {
+                return new ResponseEntity<>(WRONG_BOUNDS, HttpStatus.BAD_REQUEST);
+            }
+            Seat seatCheck = null;
+            for (Seat s : cinemaRoom.getAllSeats()) {
+                if (s.getRow().equals(seat.getRow())
+                        && s.getColumn().equals(seat.getColumn())) {
+                    seatCheck = s;
+                }
+            }
+            if (seatCheck.getBooked()) {
+                return new ResponseEntity<>(ALREADY_PURCHASED, HttpStatus.BAD_REQUEST);
+            }
+            seatCheck.setBooked(true);
+            seatCheck.setToken(UUID.randomUUID().toString());
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("token", seatCheck.getToken());
+            resp.put("ticket", seatCheck);
+           return new ResponseEntity<>(resp, HttpStatus.OK);
+        }
+
+        @PostMapping("/return")
+        public ResponseEntity<Object> unBookSeat(@RequestBody ReturnRequest returnRequest) {
+            Seat seatCheck = null;
+            for (Seat s : cinemaRoom.getAllSeats()) {
+                if (s.getToken().equals(returnRequest.getToken())) {
+                    seatCheck = s;
+                }
+            }
+            if (seatCheck == null) {
+                return new ResponseEntity<>(NO_SUCH_TOKEN, HttpStatus.BAD_REQUEST);
+            } else {
+                seatCheck.setToken("");
+                seatCheck.setBooked(false);
+                Map<String, Object> resp = new HashMap<>();
+                resp.put("ticket", seatCheck);
+                return new ResponseEntity<>(resp, HttpStatus.OK);
+            }
+        }
+    }
+  learner_created: true
+- name: src/cinema/entity/Seat.java
+  visible: true
+  text: |
+    package cinema.entity;
+
+    import com.fasterxml.jackson.annotation.JsonIgnore;
+
+    public class Seat {
+
+        private Long row;
+        private Long column;
+        @JsonIgnore
+        private Long price;
+        @JsonIgnore
+        private Boolean isBooked;
+        @JsonIgnore
+        private String token;
+
+        public Seat() {
+        }
+
+        public Seat(Long row, Long column, Boolean isBooked) {
+            this.row = row;
+            this.column = column;
+            this.price = (row <= 4L ? 10L : 8L);
+            this.isBooked = isBooked;
+            this.token = "";
+        }
+
+        public Long getRow() {
+            return row;
+        }
+
+        public void setRow(Long row) {
+            this.row = row;
+        }
+
+        public Long getColumn() {
+            return column;
+        }
+
+        public void setColumn(Long column) {
+            this.column = column;
+        }
+
+        @JsonIgnore
+        public Boolean getBooked() {
+            return isBooked;
+        }
+
+        public void setBooked(Boolean booked) {
+            isBooked = booked;
+        }
+
+        @JsonIgnore
+        public Long getPrice() {
+            return price;
+        }
+
+        public void setPrice(Long price) {
+            this.price = price;
+        }
+
+        @JsonIgnore
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
+    }
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/189/stages/948/implement#comment
 status: Unchecked
 record: -1
