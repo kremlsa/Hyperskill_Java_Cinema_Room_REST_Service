@@ -355,6 +355,30 @@ files:
         }
     }
   learner_created: true
+- name: src/cinema/aop/Authenticate.java
+  visible: true
+  learner_created: true
+- name: src/cinema/aop/AuthAspect.java
+  visible: true
+  learner_created: true
+- name: src/cinema/exception_handling/CinemaExceptions.java
+  visible: true
+  learner_created: true
+- name: src/cinema/exception_handling/CinemaErrors.java
+  visible: true
+  learner_created: true
+- name: src/cinema/exception_handling/UnauthorizedError.java
+  visible: true
+  learner_created: true
+- name: src/cinema/entity/Stats.java
+  visible: true
+  learner_created: true
+- name: src/cinema/exception_handling/BadRequestError.java
+  visible: true
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/189/stages/948/implement#comment
-status: Unchecked
+status: Solved
+feedback:
+  message: Congratulations!
+  time: Wed, 02 Jun 2021 06:00:58 UTC
 record: -1

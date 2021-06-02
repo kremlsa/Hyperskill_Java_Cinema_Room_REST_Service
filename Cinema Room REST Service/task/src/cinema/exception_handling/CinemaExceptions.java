@@ -1,0 +1,18 @@
+package cinema.exception_handling;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+@ControllerAdvice
+public class CinemaExceptions {
+    @ExceptionHandler
+    public ResponseEntity<CinemaErrors> handleException(
+            UnauthorizedError unauthorizedError) {
+        CinemaErrors data = new CinemaErrors();
+        data.setError(unauthorizedError.getMessage());
+
+        return new ResponseEntity<>(data, HttpStatus.NOT_FOUND);
+    }
+}
